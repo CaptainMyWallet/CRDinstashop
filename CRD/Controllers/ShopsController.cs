@@ -21,7 +21,8 @@ namespace CRD.Controllers
             _shopsService = shopsService;
         }
 
-        [HttpGet]
+
+        [HttpGet("GetAsync")] 
         [AllowAnonymous]
         [ProducesResponseType(typeof(PaginationResponse<Shop>), StatusCodes.Status200OK)]
         [ProducesResponseType(200)]

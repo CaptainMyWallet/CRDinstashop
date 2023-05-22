@@ -7,6 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Repository\TagRepository.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Models\NewFile.txt" />
+    <None Remove="Models\TagsModel" />
+    <None Remove="Repository\NewFile.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Dapper" Version="2.0.123" />
     <PackageReference Include="log4net" Version="2.0.15" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.2" />

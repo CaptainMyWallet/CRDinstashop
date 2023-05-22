@@ -60,20 +60,50 @@ namespace CRD.Repository
 
         public async Task<PaginationResponse<Shop>> GetAsync(int skip, int take, string q, bool orderByDesc, int[] categoryIds, int[] tagIds, TransactionWrapper tw)
         {
-            var quer = "select * from [Instashopge].[dbo].[Shops] s where 1=1 ";
-            if (categoryIds.Length > 0)
+            try
             {
-                quer += "AND s.";
-            }
-            var ShopList = await tw.Connection.QueryAsync<Shop>(@"select * from [Instashopge].[dbo].[Shops]");
-             
-            var response = new PaginationResponse<Shop>()
-            {
-                Data = ShopList.ToList(),
-                Meta = new Pagination() { SearchWord = q, Skip = skip, Take = take, Count = ShopList.ToList().Count, TotalCount = 1 }
-            };
+                var query = await tw.Connection.QueryAsync<Shop>(@"select * from [Instashopge].[dbo].[Shops]");
+                if (!string.IsNullOrWhiteSpace(q))
+                {
+                    q = q.ToLower();
 
-            return response;
+                    query = query.Where(x => x.Title.ToLower().Contains(q) || x.Description.ToLower().Contains(q));
+                }
+
+                if (tagIds != null && tagIds.Length != 0)
+                {
+                    var TagsToShops = await tw.Connection.QueryAsync<int>(@"select s.ShopId from [Instashopge].[dbo].[TagsToShops] s where s.TagId in(" + String.Join(",", tagIds) + ")");
+
+                    query = query.Where(x => TagsToShops.Contains(x.Id));
+                }
+
+                if (categoryIds != null && categoryIds.Length != 0)
+                {
+                    var Categories = await tw.Connection.QueryAsync<int>(@"select s.ShopId from [Instashopge].[dbo].[CategoriesToAnything] s where s.CategoryId in(" + String.Join(",", categoryIds) + ")");
+
+                    query = query.Where(x => Categories.Contains(x.Id));
+                }
+
+                var total = query.Count();
+
+                if (orderByDesc)
+                    query = query.OrderByDescending(x => x.CreateDate);
+                else
+                    query = query.OrderBy(x => x.CreateDate);
+
+                var data = query.Skip(skip).Take(take).ToList();
+
+                var response = new PaginationResponse<Shop>()
+                {
+                    Data = data,
+                    Meta = new Pagination() { SearchWord = q, Skip = skip, Take = take, Count = data.ToList().Count, TotalCount = total }
+                };
+
+                return response;
+            }catch(Exception x)
+            {
+                throw x;
+            }
         }
 
         public async Task<Shop> GetByIdAsync(int id)

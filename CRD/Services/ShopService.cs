@@ -1,7 +1,9 @@
 ﻿using CRD.Interfaces;
 using CRD.Models;
 using CRD.Repository;
+using CRD.Utils;
 using log4net;
+using System.Reflection;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CRD.Services
@@ -58,9 +60,14 @@ namespace CRD.Services
             throw new NotImplementedException();
         }
 
-        public Task<List<ShopModel>> GetAsync(int skip, int take, string q, bool orderByDesc, int[] categoryIds, int[] tagIds)
+        public async Task<PaginationResponse<Shop>> GetAsync(int skip, int take, string q, bool orderByDesc, int[] categoryIds, int[] tagIds)
         {
-            throw new NotImplementedException();
+            using (var tw = GetTransactionWrapperWithoutTransaction())
+            {
+                var insterted = await _shopsRepository.GetAsync(skip, take,q, orderByDesc, categoryIds, tagIds,tw);
+
+                return insterted;
+            }
         }
     }
 }
