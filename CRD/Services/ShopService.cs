@@ -45,19 +45,35 @@ namespace CRD.Services
             }
         }
 
-        public Task<ShopModel> UpdateAsync(ShopRequest model)
+        public async Task<Shop> UpdateAsync(ShopRequest model)
         {
-            throw new NotImplementedException();
+            using (var tw = GetTransactionWrapper())
+            {
+                var update = await _shopsRepository.UpdateAsync(model, tw);
+
+                tw.Commit();
+
+                return update;
+
+            }
         }
 
-        public Task<ShopModel> GetByIdAsync(int id)
+        public async Task<Shop> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            var tw = GetTransactionWrapperWithoutTransaction();
+            var shop = await _shopsRepository.GetByIdAsync(id, tw);
+            return shop;
         }
 
-        public Task DeleteAsync(int id)
+        public async Task DeleteAsync(int id)
         {
-            throw new NotImplementedException();
+            using (var tw = GetTransactionWrapper())
+            {
+                await _shopsRepository.DeleteAsync(id, tw);
+
+                tw.Commit();
+
+            }
         }
 
         public async Task<PaginationResponse<Shop>> GetAsync(int skip, int take, string q, bool orderByDesc, int[] categoryIds, int[] tagIds)

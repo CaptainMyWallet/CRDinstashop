@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CRD.Controllers
 {
+    [Route("api/[controller]")]
     public class SaleShopsController : ApiBaseController
     {
         private readonly IHttpContextAccessor _httpContentAccessor;
@@ -22,7 +23,7 @@ namespace CRD.Controllers
         }
         
         [AllowAnonymous]
-        [HttpGet("GetSaleShops")]
+        [HttpGet("")]
         [ProducesResponseType(typeof(List<SaleShopModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]

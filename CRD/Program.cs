@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
 using CRD.Middleware;
+using System.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +17,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+                      policy =>
+                      {
+                          policy.WithOrigins("https://localhost:3000", "http://localhost:3000").AllowAnyHeader()
+                                                  .AllowAnyMethod(); 
+                      });
+});
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("oauth2", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
@@ -51,6 +61,8 @@ builder.Services.AddScoped<LoanRepository>();
 builder.Services.AddScoped<CategoryRepository>();
 builder.Services.AddScoped<SaleShopsRepository>();
 builder.Services.AddScoped<ShopsRepository>();
+builder.Services.AddScoped<TagsRepository>();
+builder.Services.AddScoped<WeekShopRepository>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -58,6 +70,8 @@ builder.Services.AddScoped<ILoanService, LoanService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ISaleShopsService, SaleShopsService>();
 builder.Services.AddScoped<IShopsService, ShopService>();
+builder.Services.AddScoped<ITagsService, TagsService>();
+builder.Services.AddScoped<IWeekShopService, WeekShopService>();
 
 builder.Services.AddHttpContextAccessor();
 
@@ -69,11 +83,11 @@ app.UseMiddleware(typeof(ErrorHandlingMiddleware));
 //app.UseHttpLogging();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+//}
 
 var repository = LogManager.CreateRepository("Rolling");
 
@@ -83,6 +97,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseCors(MyAllowSpecificOrigins);
 app.MapControllers();
 
 app.Run();

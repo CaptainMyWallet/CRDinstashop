@@ -1,4 +1,5 @@
 ﻿using CRD.Interfaces;
+using CRD.Services;
 using CRD.Utils;
 using log4net;
 using Microsoft.AspNetCore.Authorization;
@@ -7,33 +8,32 @@ using Microsoft.AspNetCore.Mvc;
 namespace CRD.Controllers
 {
     [Route("api/[controller]")]
-    public class ShopsController : ApiBaseController
+    public class TagsController : ApiBaseController
     {
         private readonly IHttpContextAccessor _httpContentAccessor;
 
-        private readonly IShopsService _shopsService;
+        private readonly ITagsService _tagsService;
         private IConfiguration _configuration;
         private static readonly ILog log = LogManager.GetLogger("Rolling", nameof(ShopsController));
-        public ShopsController(IConfiguration configuration, IHttpContextAccessor httpContentAccessor, IShopsService shopsService)
+        public TagsController(IConfiguration configuration, IHttpContextAccessor httpContentAccessor, ITagsService tagsService)
             : base(configuration, httpContentAccessor)
         {
             this._configuration = configuration;
             this._httpContentAccessor = httpContentAccessor;
-            _shopsService = shopsService;
+            this._tagsService = tagsService;
         }
 
-
-        [HttpGet("")] 
+        [HttpGet("GetAsync")]
         [AllowAnonymous]
-        [ProducesResponseType(typeof(PaginationResponse<Shop>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginationResponse<TagDTOT>), StatusCodes.Status200OK)]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> GetAsync([FromQuery] int skip = 0, int take = 15, string q = "", bool orderByDesc = true, [FromQuery] int[] categoryIds = null, [FromQuery] int[] tagIds = null)
+        public async Task<IActionResult> GetAsync([FromQuery] int skip = 0, int take = 15, string q = "", bool orderByDesc = true)
         {
             try
             {
-                var data = await _shopsService.GetAsync(skip, take, q, orderByDesc, categoryIds, tagIds);
-                
+                var data = await _tagsService.GetAsync(skip, take, q, orderByDesc);
+
                 return Ok(data);
             }
             catch (Exception ex)
@@ -59,7 +59,7 @@ namespace CRD.Controllers
         {
             try
             {
-                var data = await _shopsService.GetByIdAsync(id);
+                var data = await _tagsService.GetByIdAsync(id);
 
                 return Ok(data);
             }
@@ -79,14 +79,14 @@ namespace CRD.Controllers
         /// <response code="400">If error</response>
         [HttpPost]
         [AllowAnonymous]
-        [ProducesResponseType(typeof(SaleShopModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> CreateAsync([FromBody] ShopRequest model)
+        public async Task<IActionResult> CreateAsync([FromBody] Tag model)
         {
             try
             {
-                var data = await _shopsService.CreateAsync(model);
+                var data = await _tagsService.CreateAsync(model);
 
                 return StatusCode(StatusCodes.Status201Created, data);
             }
@@ -106,16 +106,16 @@ namespace CRD.Controllers
         /// <response code="400">If error</response>
         [HttpPut("UpdateAsync/{id}")]
         [AllowAnonymous]
-        [ProducesResponseType(typeof(SaleShopModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(TagDTOT), StatusCodes.Status200OK)]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> UpdateAsync([FromRoute] int id, [FromBody] ShopRequest model)
+        public async Task<IActionResult> UpdateAsync([FromRoute] int id, [FromBody] Tag model)
         {
             try
             {
                 model.Id = id;
 
-                var data = await _shopsService.UpdateAsync(model);
+                var data = await _tagsService.UpdateAsync(model);
 
                 return Ok(data);
             }
@@ -135,14 +135,14 @@ namespace CRD.Controllers
         /// <response code="400">If error</response>
         [HttpDelete("DeleteAsyncAsync/{id}")]
         [AllowAnonymous]
-        [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         public async Task<IActionResult> DeleteAsyncAsync([FromRoute] int id)
         {
             try
             {
-                await _shopsService.DeleteAsync(id);
+                await _tagsService.DeleteAsync(id);
 
                 return Ok();
             }
@@ -153,11 +153,6 @@ namespace CRD.Controllers
                 return BadRequest();
             }
         }
-
-
-
-
-
 
     }
 }

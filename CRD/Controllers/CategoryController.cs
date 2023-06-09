@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CRD.Controllers
 {
+    [Route("api/[controller]")]
     public class CategoryController : ApiBaseController
     {
         private readonly ICategoryService _categoryService;
@@ -20,10 +21,10 @@ namespace CRD.Controllers
             this._categoryService = lcatrgoryService;
             this._httpContentAccessor = httpContentAccessor;
         }
-        [HttpGet(nameof(GetCategory))]
+        [HttpGet(nameof(categories))]
         [ProducesResponseType(typeof(List<CategoryDTOL>), StatusCodes.Status200OK)]
 
-        public async Task<IActionResult> GetCategory()
+        public async Task<IActionResult> categories()
         {
 
             var result = await _categoryService.GetCategory();

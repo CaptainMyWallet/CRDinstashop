@@ -24,7 +24,7 @@
         public int ShopId { get; set; }
         public Shop Shop { get; set; }
         public int TagId { get; set; }
-        public Tag Tag { get; set; }
+        public TagDTOT Tag { get; set; }
     }
 
     public class TagModel {

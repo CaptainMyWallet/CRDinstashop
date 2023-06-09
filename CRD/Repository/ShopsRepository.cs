@@ -1,12 +1,15 @@
-﻿using CRD.Utils;
+﻿using CRD.Interfaces;
+using CRD.Utils;
 using Dapper;
 
 namespace CRD.Repository
 {
     public class ShopsRepository : BaseRepository
     {
-        public ShopsRepository(IConfiguration configuration) : base(configuration)
+        ITagsService _TagsService;
+        public ShopsRepository(IConfiguration configuration, ITagsService tagsService) : base(configuration)
         {
+            _TagsService = tagsService;
         }
 
         public async Task<Shop> CreateAsync(ShopRequest model, TransactionWrapper tw)
@@ -79,10 +82,20 @@ namespace CRD.Repository
 
                 if (categoryIds != null && categoryIds.Length != 0)
                 {
-                    var Categories = await tw.Connection.QueryAsync<int>(@"select s.ShopId from [Instashopge].[dbo].[CategoriesToAnything] s where s.CategoryId in(" + String.Join(",", categoryIds) + ")");
+                    var Categories = await tw.Connection.QueryAsync<int?>(@"select s.ShopId from [Instashopge].[dbo].[CategoriesToAnything] s where s.CategoryId in(" + String.Join(",", categoryIds) + ")");
 
                     query = query.Where(x => Categories.Contains(x.Id));
                 }
+
+                foreach (var item in query)
+                {
+                    item.Tags = _TagsService.GetByShopIdAsync(item.Id);
+                    foreach (var item2 in item.Tags)
+                    {
+                        item2.Tag = await _TagsService.GetByIdAsync(item2.TagId);
+                    }
+                }
+
 
                 var total = query.Count();
 
@@ -100,47 +113,46 @@ namespace CRD.Repository
                 };
 
                 return response;
-            }catch(Exception x)
+            }
+            catch (Exception x)
             {
                 throw x;
             }
         }
 
-        public async Task<Shop> GetByIdAsync(int id)
+        public async Task<Shop> GetByIdAsync(int id, TransactionWrapper tw)
         {
-            //var data = await _db.Shops
-            //    .Include(x => x.Categories)
-            //    .ThenInclude(x => x.Category)
-            //    .ThenInclude(x => x.Translations)
-            //    .Include(x => x.Tags)
-            //    .ThenInclude(x => x.Tag)
-            //    .ThenInclude(x => x.Translations)
-            //    .FirstOrDefaultAsync(x => x.Id == id);
+            var shop = await tw.Connection.QueryFirstOrDefaultAsync<Shop>(@"select * from [Instashopge].[dbo].[Shops] 
+                                                            where id = @id", new { Id = id });
 
-            //return new Shop(data, _lang);
-            throw new NotImplementedException();
+            return shop;
         }
 
-        public async Task<Shop> UpdateAsync(ShopRequest model)
+        public async Task<Shop> UpdateAsync(ShopRequest model, TransactionWrapper tw)
         {
-            //var data = await _db.Shops.Include(x => x.Categories).Include(x => x.Tags).FirstOrDefaultAsync(x => x.Id == model.Id);
+            var updated = await tw.Connection.QueryFirstAsync<Shop>(@"UPDATE [dbo].[Shops]
+                                                                   SET [Title] = @Title
+                                                                      ,[Posts] = @Posts
+                                                                      ,[Followers] = @Followers
+                                                                      ,[Description] = @Description
+                                                                      ,[Image] = @Image
+                                                                      ,[Link] = @Link
+                                                                      ,[UpdateDate] = Getdate()
 
-            //ShopTransformer.Transform(data, model);
-
-            //await _db.SaveChangesAsync();
-
-            //data = await _db.Shops
-            //    .Include(x => x.Categories)
-            //    .ThenInclude(x => x.Category)
-            //    .ThenInclude(x => x.Translations)
-            //    .Include(x => x.Tags)
-            //    .ThenInclude(x => x.Tag)
-            //    .ThenInclude(x => x.Translations)
-            //    .FirstOrDefaultAsync(x => x.Id == model.Id);
-
-            //return new Shop(data, _lang);
-
-            throw new NotImplementedException();
+                                             WHERE ID = @id;
+                                             select * from [dbo].[Shops] where id = @id;
+                                            ",
+        new
+        {
+            model.Title,
+            model.Posts,
+            model.Followers,
+            model.Description,
+            model.Image,
+            model.Link,
+            @id = model.Id
+        }, transaction: tw.Transaction);
+            return updated;
         }
 
     }
