@@ -69,5 +69,16 @@ namespace CRD.Controllers
             else
                 return NotFound();
         }
+
+        [HttpPost(nameof(Update))]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        public async Task<IActionResult> Update([FromBody] WeekShop model)
+        {
+            var result = await _weekShopService.UpdateAsync(model);
+            if (result)
+                return Ok();
+            else
+                return BadRequest("Unable to create weekshop");
+        }
     }
 }

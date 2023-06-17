@@ -1,7 +1,7 @@
 ﻿using CRD.Utils;
 
 namespace CRD.Interfaces
-{ 
+{
 
     public interface IWeekShopService
     {
@@ -9,6 +9,7 @@ namespace CRD.Interfaces
         Task<bool> DeleteAsync(int id);
         Task<PaginationResponse<querrr>> GetAsync(int skip, int take, string q, bool orderByDesc);
         Task<WeekShop> GetByIdAsync(int id);
+        Task<bool> UpdateAsync(WeekShop model);
     }
 
 }
