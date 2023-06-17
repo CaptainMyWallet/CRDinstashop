@@ -1,12 +1,15 @@
-﻿using CRD.Utils;
+﻿using CRD.Models;
+using CRD.Utils;
 using Dapper;
 
 namespace CRD.Repository
 {
     public class WeekShopRepository : BaseRepository
     {
+        IConfiguration _configuration;
         public WeekShopRepository(IConfiguration configuration) : base(configuration)
         {
+            _configuration = configuration;
         }
 
         public async Task<bool> CreateAsync(WeekShop model, TransactionWrapper tw)
@@ -39,6 +42,16 @@ SELECT @ID;
                     },
                     tw.Transaction
                     );
+                foreach (var item in model.CategoryIds.ToList())
+                {
+                    await tw.Connection.QueryAsync("INSERT INTO [dbo].[CategoriesToAnything] ([WeekShopId],[CategoryId])  VALUES ( @WeekShopId,@CategoryId)", new
+                    {
+                        WeekShopId = res,
+                        CategoryId = item,
+                    }, tw.Transaction);
+
+                }
+
                 if (res > 0)
                 {
                     return true;
@@ -69,27 +82,43 @@ SELECT @ID;
             }
         }
 
-        public async Task<PaginationResponse<WeekShop>> GetAsync(int skip, int take, string q, bool orderByDesc, TransactionWrapper tw)
+        public async Task<PaginationResponse<querrr>> GetAsync(int skip, int take, string q, bool orderByDesc, TransactionWrapper tw)
         {
+            var res = new List<querrr>();
             var query = await tw.Connection.QueryAsync<WeekShop>(@"select * from [Instashopge].[dbo].[WeekShops]");
+            foreach (var item in query.ToList())
+            {
+                    var ss = await tw.Connection.QueryAsync<CategoryDTOL>(@"select ct.Id,ct.Title from WeekShops s with(nolock) inner join CategoriesToAnything ss with(nolock) on ss.WeekShopId=s.Id " +
+                "inner join CategoryTranslation ct with(nolock) on ct.CategoryId=ss.CategoryId and ct.LanguageCode='ka' " +
+                "where s.Id = @Id", new
+                {
+                    Id = item.Id
+                }, tw.Transaction);
+
+                res.Add(new querrr { WeekShop = item, CategoryTranslation = ss.ToList() });
+            }
+            
+             
+
+            var qrres = res.ToList();
 
             if (!string.IsNullOrWhiteSpace(q))
             {
                 q = q.ToLower();
 
-                query = query.Where(x => x.Title.ToLower().Contains(q));
+                qrres = qrres.Where(x => x.WeekShop.Title.ToLower().Contains(q)).ToList();
             }
 
-            var total = query.Count();
+            var total = qrres.Count();
 
             if (orderByDesc)
-                query = query.OrderByDescending(x => x.CreateDate);
+                qrres = qrres.OrderByDescending(x => x.WeekShop.CreateDate).ToList();
             else
-                query = query.OrderBy(x => x.CreateDate);
+                qrres = qrres.OrderBy(x => x.WeekShop.CreateDate).ToList();
 
-            var data = query.Skip(skip).Take(take).ToList();
+            var data = qrres.Skip(skip).Take(take).ToList();
 
-            var response = new PaginationResponse<WeekShop>()
+            var response = new PaginationResponse<querrr>()
             {
                 Data = data,
                 Meta = new Pagination() { SearchWord = q, Skip = skip, Take = take, Count = data.Count, TotalCount = total }

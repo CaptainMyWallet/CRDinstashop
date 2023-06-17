@@ -44,7 +44,7 @@ namespace CRD.Services
             return weekShop;
         }
 
-        Task<PaginationResponse<WeekShop>> IWeekShopService.GetAsync(int skip, int take, string q, bool orderByDesc)
+        Task<PaginationResponse<querrr>> IWeekShopService.GetAsync(int skip, int take, string q, bool orderByDesc)
         {
             var tw = GetTransactionWrapperWithoutTransaction();
             var response = _weekShopRepository.GetAsync(skip, take, q, orderByDesc, tw);

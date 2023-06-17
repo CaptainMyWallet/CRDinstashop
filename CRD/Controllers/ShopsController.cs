@@ -127,24 +127,49 @@ namespace CRD.Controllers
             }
         }
 
+
+        /// <summary>
+        /// Counter
+        /// </summary>
+        /// <returns></returns>
+        /// <response code="200"></response>        
+        /// <response code="400">If error</response>
+        [HttpGet("AddCountByShopId/{Id}")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(SaleShopModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        public async Task<IActionResult> AddCountByShopId(int Id)
+        {
+            try
+            {
+                await _shopsService.AddCountByShopId(Id);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex.ToString());
+
+                return BadRequest();
+            }
+        }
+
         /// <summary>
         /// Delete
         /// </summary>
         /// <returns></returns>
         /// <response code="200"></response>        
         /// <response code="400">If error</response>
-        [HttpDelete("DeleteAsyncAsync/{id}")]
+        [HttpDelete("DeleteAsync/{id}")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> DeleteAsyncAsync([FromRoute] int id)
+        public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
             try
             {
-                await _shopsService.DeleteAsync(id);
-
-                return Ok();
+                return Ok(await _shopsService.DeleteAsync(id));
             }
             catch (Exception ex)
             {

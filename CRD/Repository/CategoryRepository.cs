@@ -22,5 +22,11 @@ namespace CRD.Repository
 
             return categoryTranslation.ToList();
         }
+        public async Task<List<CategoriesToAnything>> GetCategoriesToAnythings(TransactionWrapper tw)
+        {
+            var categoryToAnythings = await tw.Connection.QueryAsync<CategoriesToAnything>(@"select * from [Instashopge].[dbo].[CategoriesToAnything]");
+
+            return categoryToAnythings.ToList();
+        }
     }
 }

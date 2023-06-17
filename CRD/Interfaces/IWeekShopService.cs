@@ -7,7 +7,7 @@ namespace CRD.Interfaces
     {
         Task<bool> CreateAsync(WeekShop model);
         Task<bool> DeleteAsync(int id);
-        Task<PaginationResponse<WeekShop>> GetAsync(int skip, int take, string q, bool orderByDesc);
+        Task<PaginationResponse<querrr>> GetAsync(int skip, int take, string q, bool orderByDesc);
         Task<WeekShop> GetByIdAsync(int id);
     }
 

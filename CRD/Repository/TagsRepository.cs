@@ -1,5 +1,6 @@
 ﻿using CRD.Utils;
 using Dapper;
+using System.Net;
 
 namespace CRD.Repository
 {
@@ -9,71 +10,75 @@ namespace CRD.Repository
         {
         }
 
-        public async Task<bool> CreateAsync(Tag model, TransactionWrapper tw)
+        public async Task<bool> CreateAsync(TagN model, TransactionWrapper tw)
         {
             try
             {
+                var InsertedId = await tw.Connection.QueryFirstAsync<int>(
+                    @"DECLARE @ID INT;
+            INSERT INTO [dbo].[Tags] ([CreateDate]) VALUES (GETDATE());
+            SET @ID = SCOPE_IDENTITY();
+            SELECT @ID;",
+                    null,
+                    tw.Transaction);
 
-
-                var InstertedId = await tw.Connection.QueryFirstAsync<int>(@"declare @ID int;
-                                                                    INSERT INTO [dbo].[Tags]
-                                                                               ([CreateDate])
-                                                                         VALUES
-                                                                               (getdate())
-                                                                    set @ID = SCOPE_IDENTITY();
-                                                            select * from [dbo].[Tags] where id = @ID;
-                                                        ", tw.Transaction);
-
-                if (InstertedId > 0)
+                if (InsertedId > 0)
                 {
-                    var res = await tw.Connection.QueryFirstAsync<int>(@"declare @ID int;
-                                                                                INSERT INTO [dbo].[TagTranslation]
-                                                                                           ([TagId]
-                                                                                           ,[Title]
-                                                                                           ,[LanguageCode])
-                                                                                     VALUES
-                                                                                           (@InstertedId
-                                                                                           ,@Title
-                                                                                           ,@LanguageCode)
-                                                                                            set @ID = SCOPE_IDENTITY();
-                                                                                                    ",
+                    var res = await tw.Connection.QueryFirstAsync<int>(
+                        @"DECLARE @ID INT;
+                INSERT INTO [dbo].[TagTranslation]
+                    ([TagId], [Title], [LanguageCode])
+                VALUES
+                    (@InsertedId, @Title, @LanguageCode);
+                SET @ID = SCOPE_IDENTITY();
+                SELECT @ID;",
                         new
                         {
-                            InstertedId,
-                            model.Translations.First().Title,
+                            InsertedId = InsertedId,
+                            Title = model.Translations.First().Title,
                             LanguageCode = "ka"
                         },
-                        tw.Transaction
-                        );
+                        tw.Transaction);
+
                     if (res > 0)
                     {
                         return true;
                     }
                 }
 
-
                 return false;
             }
             catch (Exception ex)
             {
-
                 throw ex;
             }
         }
 
+
         public async Task<bool> DeleteAsync(int id, TransactionWrapper tw)
         {
-            var data = await tw.Connection.QueryFirstAsync<int>(@"delete s from [dbo].[Tags] s
-                                                                            where s.id=@id
-                                                            select * from [dbo].[Tags] where id = @ID;
+            try
+            {
+
+                var data = await tw.Connection.QueryFirstAsync<int>(@"DELETE FROM [dbo].[TagTranslation]
+                                                                      WHERE TagId=@id ;
+                                                                delete s from [dbo].[Tags] s
+                                                                            where s.id=@id;
+                                                            select Count(*) from [dbo].[Tags] where id = @id;
                                                         ", new { id }, tw.Transaction);
-            if (data > 0)
-            {
-                return false;
+                if (data > 0)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
             }
-            else
+            catch (Exception x)
             {
-                return true;
+
+                throw x.InnerException;
             }
         }
 

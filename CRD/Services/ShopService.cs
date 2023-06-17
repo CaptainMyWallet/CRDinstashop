@@ -57,7 +57,16 @@ namespace CRD.Services
 
             }
         }
+        public async Task AddCountByShopId(int id)
+        {
+            using (var tw = GetTransactionWrapper())
+            {
+                await _shopsRepository.AddCountByShopId(id, tw);
 
+                tw.Commit();
+            }
+
+        }
         public async Task<Shop> GetByIdAsync(int id)
         {
             var tw = GetTransactionWrapperWithoutTransaction();
@@ -65,14 +74,14 @@ namespace CRD.Services
             return shop;
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
             using (var tw = GetTransactionWrapper())
             {
-                await _shopsRepository.DeleteAsync(id, tw);
+                var res = await _shopsRepository.DeleteAsync(id, tw);
 
                 tw.Commit();
-
+                return res;
             }
         }
 

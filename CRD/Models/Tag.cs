@@ -32,4 +32,20 @@
         public string Title { get; set; }
 
     }
+
+    public class TagN
+    {
+        public int Id { get; set; }
+        public DateTime CreateDate { get; set; }
+        public DateTime? UpdateDate { get; set; }
+        public List<TagTranslationN> Translations { get; set; }
+    }
+    public class TagTranslationN
+    {
+        public int Id { get; set; }
+        public int TagId { get; set; }
+        public string Title { get; set; }
+        public string LanguageCode { get; set; }
+    }
+
 }

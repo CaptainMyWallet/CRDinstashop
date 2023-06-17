@@ -18,7 +18,7 @@ namespace CRD.Services
             _tagsRepository = tagsRepository;
         }
 
-        public async Task<bool> CreateAsync(Tag model)
+        public async Task<bool> CreateAsync(TagN model)
         {
             using (var tw = GetTransactionWrapper())
             {

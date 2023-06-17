@@ -4,7 +4,7 @@ namespace CRD.Interfaces
 {
     public interface ITagsService
     {
-        Task<bool> CreateAsync(Tag model);
+        Task<bool> CreateAsync(TagN model);
         Task<TagDTOT> UpdateAsync(Tag model);
         Task<TagDTOT> GetByIdAsync(int id);
         Task<bool> DeleteAsync(int id);

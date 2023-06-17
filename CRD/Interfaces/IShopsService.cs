@@ -7,8 +7,8 @@ namespace CRD.Interfaces
         Task<ShopModel> CreateAsync(ShopRequest model);
         Task<Shop> UpdateAsync(ShopRequest model);
         Task<Shop> GetByIdAsync(int id);
-        Task DeleteAsync(int id);
+        Task<bool> DeleteAsync(int id);
         Task<PaginationResponse<Shop>> GetAsync(int skip, int take, string q, bool orderByDesc, int[] categoryIds, int[] tagIds);
-
+        Task AddCountByShopId(int id);
     }
 }

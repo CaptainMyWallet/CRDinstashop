@@ -82,7 +82,7 @@ namespace CRD.Controllers
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> CreateAsync([FromBody] Tag model)
+        public async Task<IActionResult> CreateAsync([FromBody] TagN model)
         {
             try
             {
@@ -133,12 +133,12 @@ namespace CRD.Controllers
         /// <returns></returns>
         /// <response code="200"></response>        
         /// <response code="400">If error</response>
-        [HttpDelete("DeleteAsyncAsync/{id}")]
+        [HttpDelete("DeleteAsync/{id}")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> DeleteAsyncAsync([FromRoute] int id)
+        public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
             try
             {

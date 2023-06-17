@@ -1,6 +1,7 @@
 ﻿using CRD.Interfaces;
 using CRD.Utils;
 using Dapper;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CRD.Repository
 {
@@ -50,15 +51,22 @@ namespace CRD.Repository
             return insterted;
         }
 
-        public async Task DeleteAsync(int id, TransactionWrapper tw)
+        public async Task<bool> DeleteAsync(int id, TransactionWrapper tw)
         {
-            await tw.Connection.ExecuteAsync(@"delete from [Instashopge].[dbo].[Shops] 
-                                                            where id = @Id",
+            var data = await tw.Connection.ExecuteAsync(@"delete s from [Instashopge].[dbo].[Shops] s
+                                                            where Id = @Id",
                                                             new
                                                             {
                                                                 Id = id
-                                                            });
-            tw.Commit();
+                                                            }, tw.Transaction);
+            if (data > 0)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
 
         public async Task<PaginationResponse<Shop>> GetAsync(int skip, int take, string q, bool orderByDesc, int[] categoryIds, int[] tagIds, TransactionWrapper tw)
@@ -75,14 +83,14 @@ namespace CRD.Repository
 
                 if (tagIds != null && tagIds.Length != 0)
                 {
-                    var TagsToShops = await tw.Connection.QueryAsync<int>(@"select s.ShopId from [Instashopge].[dbo].[TagsToShops] s where s.TagId in(" + String.Join(",", tagIds) + ")");
+                    var TagsToShops = await tw.Connection.QueryAsync<int>(@"select s.ShopId from [Instashopge].[dbo].[TagsToShops] s where s.TagId in(" + string.Join(",", tagIds) + ")");
 
                     query = query.Where(x => TagsToShops.Contains(x.Id));
                 }
 
                 if (categoryIds != null && categoryIds.Length != 0)
                 {
-                    var Categories = await tw.Connection.QueryAsync<int?>(@"select s.ShopId from [Instashopge].[dbo].[CategoriesToAnything] s where s.CategoryId in(" + String.Join(",", categoryIds) + ")");
+                    var Categories = await tw.Connection.QueryAsync<int?>(@"select s.ShopId from [Instashopge].[dbo].[CategoriesToAnything] s where s.CategoryId in(" + string.Join(",", categoryIds) + ")");
 
                     query = query.Where(x => Categories.Contains(x.Id));
                 }
@@ -154,6 +162,28 @@ namespace CRD.Repository
         }, transaction: tw.Transaction);
             return updated;
         }
+        public async Task AddCountByShopId(int Id, TransactionWrapper tw)
+        {
+            try
+            {
+                await tw.Connection.QueryFirstAsync<int>(@"UPDATE [dbo].[Shops]
+                                                                   SET 
+                                                                        Count = Count + 1
+                                                                      ,[UpdateDate] = Getdate()
+																	  where id= @id;
+                                            select 2",
+                                                                new
+                                                                {
+                                                                    @id = Id
+                                                                }, transaction: tw.Transaction);
+            }
+            catch (Exception x)
+            {
 
+                throw x;
+            }
+            
+
+        }
     }
 }
