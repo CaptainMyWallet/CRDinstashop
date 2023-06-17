@@ -47,21 +47,29 @@ namespace CRD.Repository
                 model.Link
             }, tw.Transaction);
 
-
-            if (model.TagIds != null && model.TagIds.Length > 0)
+            try
             {
-                foreach (int tagId in model.TagIds)
+                if (model.TagIds != null && model.TagIds.Length > 0)
                 {
-                    await tw.Connection.ExecuteAsync(@"
+                    foreach (int tagId in model.TagIds)
+                    {
+                        await tw.Connection.ExecuteAsync(@"
                 INSERT INTO [Instashopge].[dbo].[TagsToShops] ([ShopId], [TagId])
                 VALUES (@ShopId, @TagId)
             ", new
-                    {
-                        ShopId = insterted.Id,
-                        TagId = tagId
-                    }, tw.Transaction);
+                        {
+                            ShopId = insterted.Id,
+                            TagId = tagId
+                        }, tw.Transaction);
+                    }
                 }
+
             }
+            catch (Exception e)
+            {
+                
+            }
+           
 
 
             return insterted;
