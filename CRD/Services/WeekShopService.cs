@@ -50,6 +50,16 @@ namespace CRD.Services
             var response = _weekShopRepository.GetAsync(skip, take, q, orderByDesc, tw);
             return response;
         }
+        public async Task<bool> UpdateAsync(WeekShop model)
+        {
+            using (var tw = GetTransactionWrapper())
+            {
+                var result = await _weekShopRepository.UpdateAsync(model, tw);
+                tw.Commit();
+                return result;
+
+            }
+        }
     }
 }
 

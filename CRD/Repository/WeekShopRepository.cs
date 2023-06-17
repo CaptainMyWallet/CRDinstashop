@@ -114,5 +114,31 @@ SELECT @ID;
                 throw ex;
             }
         }
+
+
+        public async Task<bool> UpdateAsync(WeekShop model, TransactionWrapper tw)
+        {
+            try
+            {
+                var affectedRows = await tw.Connection.ExecuteAsync(@"
+            UPDATE [dbo].[WeekShops]
+            SET [Title] = @Title, [Image] = @Image, [Link] = @Link, UpdateDate=GETDATE()
+            WHERE [Id] = @Id
+        ", new
+                {
+                    model.Id,
+                    model.Title,
+                    model.Image,
+                    model.Link
+                }, tw.Transaction);
+
+                return affectedRows > 0;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
     }
 }
